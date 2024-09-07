@@ -1,0 +1,4 @@
+export const DEFAULT_ACCESS_TOKEN_EXPIRED = '24';
+export const DEFAULT_REFRESH_TOKEN_EXPIRED = '48';
+export const MAX_MAIL_VERIFY_SENDING = 5;
+export const MAIL_VERIFY_TTL = 1800;
