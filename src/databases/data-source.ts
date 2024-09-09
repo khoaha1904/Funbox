@@ -11,7 +11,6 @@ for (const envName of Object.keys(process.env)) {
 	process.env[envName] = process.env[envName].replace(/\\n/g, '\n');
 }
 
-console.log(__dirname + '/..');
 export const dataSourceOptions: DataSourceOptions = {
 	type: 'postgres',
 	migrations: [__dirname + '/migrations/*.js'],

@@ -12,9 +12,15 @@ import { TenantRepository } from './repositories/tenant.repository';
 import { TenantRepositoryImpl } from './repositories/tenant.repository.impl';
 import { DatabaseModule } from '@apps/databases/database.module';
 import { TenantProfile } from './profiles/tenant.profile';
+import { UserTenantRepository } from './repositories/user-tenant.repository';
+import { UserTenantRepositoryImpl } from './repositories/user-tenant.repository.impl';
+import { UserTenantEntity } from './entities/user-tenant.entity';
 
 const services = [{ provide: TenantService, useClass: TenantServiceImpl }];
-const providers = [{ provide: TenantRepository, useClass: TenantRepositoryImpl }];
+const providers = [
+    { provide: TenantRepository, useClass: TenantRepositoryImpl },
+    { provide: UserTenantRepository, useClass: UserTenantRepositoryImpl }
+];
 const profiles = [TenantProfile];
 
 @Module({
@@ -26,7 +32,7 @@ const profiles = [TenantProfile];
             envFilePath: '.env',
         }),
         DatabaseModule,
-        DatabaseModule.forFeature([TenantEntity]),
+        DatabaseModule.forFeature([TenantEntity, UserTenantEntity]),
         AutomapperModule.forRoot({
             strategyInitializer: classes(),
         }),

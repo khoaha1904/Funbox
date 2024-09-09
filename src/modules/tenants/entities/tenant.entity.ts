@@ -1,7 +1,7 @@
 import { AutoMap } from '@automapper/classes';
 import { BaseEntity } from '@libs/shared/entities/base.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
-// import { UserTenantRoleEntity } from '../../role-permissions/entities/user-tennant-role.entity';
+import { UserTenantEntity } from './user-tenant.entity';
 
 @Entity('app_tenants')
 export class TenantEntity extends BaseEntity {
@@ -13,7 +13,7 @@ export class TenantEntity extends BaseEntity {
     @AutoMap()
     code: string;
 
-    // @OneToMany(() => UserTenantRoleEntity, (userTenantRole: UserTenantRoleEntity) => userTenantRole.user)
-    // @AutoMap(() => [UserTenantRoleEntity])
-    // userTenantRoles: UserTenantRoleEntity[];
+    @OneToMany(() => UserTenantEntity, (userTenantRole: UserTenantEntity) => userTenantRole.user)
+    @AutoMap(() => [UserTenantEntity])
+    userTenants: UserTenantEntity[];
 }

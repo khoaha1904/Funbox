@@ -72,11 +72,11 @@ export abstract class BaseRepositoryImpl<T extends BaseEntity | BaseNoneIdEntity
 
 	public async findAndCount(
 		filters: FindManyOptions<T> = {},
-		pagination: PaginationRequestDto,
+		pagination?: PaginationRequestDto,
 		runner?: QueryRunner
 	): Promise<[T[], number]> {
 		// remove filter field
-		const { pageIndex = 0, pageSize = 10, sort, filter } = pagination;
+		const { pageIndex = 0, pageSize = 10, sort, filter } = pagination || {};
 
 		const sortData = sort?.split(':');
 		const order = {

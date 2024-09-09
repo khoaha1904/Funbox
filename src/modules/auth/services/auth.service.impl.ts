@@ -85,23 +85,6 @@ export class AuthServiceImpl implements AuthService {
 			const accessToken = this.jwtService.sign(user, { expiresIn: this.accessTokenTime });
 			const refreshToken = this.jwtService.sign(user, { expiresIn: this.refreshTokenTime });
 
-			// const user_session: UserSessionDto = {
-			// 	id: user.id,
-			// 	email: user.email,
-			// 	phone: user.phone,
-			// 	supabase_session: {
-			// 		access_token: result.data.session.access_token,
-			// 		refresh_token: result.data.session.refresh_token,
-			// 	},
-			// };
-
-			// const user_tenant = await this._rolePermissionService.getUserRoleListWithoutTenant({ user_id: user.id });
-
-			// if (user_tenant?.data?.[0]) {
-			// 	user_session.tenant_id = user_tenant?.data[0].tenant_id;
-			// 	user_session.role = user_tenant?.data[0].app_role.name;
-			// }
-
 			await this._authCacheService.setSession(user.id, user);
 
 			return {

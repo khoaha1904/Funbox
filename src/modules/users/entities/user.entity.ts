@@ -2,6 +2,7 @@ import { AutoMap } from '@automapper/classes';
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 // import { UserTenantRoleEntity } from '../../role-permissions/entities/user-tennant-role.entity';
 import { BaseEntity } from '@libs/shared/entities/base.entity';
+import { UserTenantEntity } from '@apps/modules/tenants/entities/user-tenant.entity';
 
 @Entity('app_users')
 export class UserEntity extends BaseEntity {
@@ -19,10 +20,7 @@ export class UserEntity extends BaseEntity {
 	@Column({ type: 'boolean', nullable: false, default: false })
 	verify: boolean;
 
-	// @Column({ type: 'uuid', nullable: true })
-	// user_tenant_role_id: string;
-
-	// @OneToMany(() => UserTenantRoleEntity, (userTenantRole: UserTenantRoleEntity) => userTenantRole.user)
-	// @AutoMap(() => [UserTenantRoleEntity])
-	// userTenantRoles: UserTenantRoleEntity[];
+	@OneToMany(() => UserTenantEntity, (userTenantRole: UserTenantEntity) => userTenantRole.user)
+	@AutoMap(() => [UserTenantEntity])
+	userTenants: UserTenantEntity[];
 }

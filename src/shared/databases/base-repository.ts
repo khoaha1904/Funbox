@@ -12,7 +12,7 @@ export interface BaseRepository<T> {
 	findOneAndUpdate: (filterCondition: FindOneOptions<T>, data: DeepPartial<T>, runner?: QueryRunner) => Promise<T>;
 	findAndCount: (
 		filters: FindManyOptions<T>,
-		pagination: PaginationRequestDto,
+		pagination?: PaginationRequestDto,
 		runner?: QueryRunner
 	) => Promise<[T[], number]>;
 	remove: (data: T) => Promise<T>;

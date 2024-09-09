@@ -21,7 +21,7 @@ async function bootstrap() {
 	app.useGlobalPipes(
 		new ValidationPipe({
 			transform: true,
-			whitelist: true,
+			// whitelist: true,
 			validationError: {
 				target: false,
 			},
@@ -37,6 +37,7 @@ async function bootstrap() {
 			},
 		})
 	);
+
 	app.use(
 		helmet({
 			crossOriginResourcePolicy: false,
