@@ -1,0 +1,66 @@
+version: "3.0"
+
+services:
+    #    core_service:
+    #        build:
+    #            context: ./
+    #            dockerfile: ./apps/core-service/Dockerfile
+    #        container_name: core_service
+    #        env_file:
+    #            - .env
+    #
+    #        command: yarn start core-service
+
+    core_redis:
+        image: redis:${REDIS_VERSION:-lastest}
+        hostname: core_redis
+        container_name: core_redis
+        ports:
+            - "${REDIS_CORE_PORT}:6379"
+        restart: always
+        command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_CORE_PASSWORD}
+        volumes:
+            - core_redis_volume:/data
+
+    core_postgres:
+        image: postgres:${POSTGRES_VERSION:-latest}
+        container_name: core_postgres
+        restart: unless-stopped
+        ports:
+            - "${POSTGRES_CORE_PORT}:5432"
+        environment:
+            POSTGRES_DB: ${POSTGRES_CORE_DB:-postgres}
+            POSTGRES_USER: ${POSTGRES_CORE_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_CORE_PASSWORD:-changeme}
+        volumes:
+            - core_postgres_volume:/var/lib/postgresql/
+
+    # pgAdmin 4 service
+    pgadmin:
+        image: dpage/pgadmin4
+        container_name: pgadmin
+        restart: unless-stopped
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+        ports:
+            - "${PGADMIN_PORT:-5050}:80"
+
+    redis-insight:
+        image: redis/redisinsight:latest
+        container_name: redis_insight
+        restart: always
+        ports:
+            - "5540:5540"
+        volumes:
+            - redis-insight:/data
+
+volumes:
+    core_redis_volume:
+    core_postgres_volume:
+    redis-insight:
+
+networks:
+    default:
+        name: funbox_network
+        external: true

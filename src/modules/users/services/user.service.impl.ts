@@ -44,7 +44,6 @@ export class UsersServiceImpl implements UsersService {
 			throw new BadRequestException('incorrect_email_or_password');
 		}
 
-
 		if (!user.isActive) {
 			throw new BadRequestException('account_is_blocked');
 		}
@@ -54,6 +53,7 @@ export class UsersServiceImpl implements UsersService {
 			throw new BadRequestException('incorrect_email_or_password');
 		}
 		return this._mapper.map(user, UserEntity, UserDto);
+
 	}
 
 	async getOne(request: GetOneUserRequestDto): Promise<UserDto> {

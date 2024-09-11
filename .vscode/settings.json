@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "docker-compose.y*ml": "yaml"
+    },
+    "material-icon-theme.activeIconPack": "nest",
+}

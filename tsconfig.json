@@ -24,6 +24,9 @@
       "@apps/databases/*": [
         "src/databases/*"
       ],
+      "@apps/externals/*": [
+        "src/externals/*"
+      ],
       "@apps/caches/*": [
         "src/caches/*"
       ],

@@ -7,6 +7,8 @@ import { UserSessionDto } from '../dtos/user-session.dto';
 import { BaseController } from '@libs/shared/common/controllers';
 import { LoginRequestDto } from '../dtos/requests/login-request.dto';
 import { RegisterRequestDto } from '../dtos/requests/register-request.dto';
+import { SelectTenantRequestDto } from '../dtos/requests/select-tenant-request.dto';
+import { UserDto } from '@apps/modules/users/dtos/user.dto';
 
 @Controller('auth')
 export class AuthController extends BaseController {
@@ -35,9 +37,10 @@ export class AuthController extends BaseController {
 
 	@Post('select-tenant')
 	@HttpCode(200)
-	async selectTenant(@Body() request: LoginRequestDto) {
+	@UseGuards(JWTAuthGuard)
+	async selectTenant(@Body() request: SelectTenantRequestDto, @CurrentUser() user: UserSessionDto) {
 		return {
-			data: await this._authService.login(request),
+			data: await this._authService.selectTenant({ userId: user?.id, tenantId: request?.tenantId }),
 			message: ResponseDescription.OK,
 		};
 	}

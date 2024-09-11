@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AppConfigService, AppLoggerService, UtilService } from '@libs/shared/services';
@@ -16,6 +16,8 @@ import { UserDto } from '@apps/modules/users/dtos/user.dto';
 import { LoginRequestDto } from '../dtos/requests/login-request.dto';
 import { LoginResponseDto } from '../dtos/responses/login-response.dto';
 import { AppMailService } from '@libs/shared/services/app-mail.service';
+import { ResponseDescription } from '@libs/shared/constants/descriptions.constant';
+import { TenantService } from '@apps/modules/tenants/services/tenant.service';
 
 @Injectable()
 export class AuthServiceImpl implements AuthService {
@@ -30,7 +32,8 @@ export class AuthServiceImpl implements AuthService {
 		private readonly _loggerService: AppLoggerService,
 		private readonly _mailService: AppMailService,
 		private readonly _authCacheService: AuthCacheService,
-		@Inject(UsersService) private readonly _userService: UsersService
+		@Inject(UsersService) private readonly _userService: UsersService,
+		@Inject(TenantService) private readonly _tenantService: TenantService
 	) {
 		this.accessTokenTime = `${this._configService.get('ACCESS_TOKEN_EXPIRED') || DEFAULT_ACCESS_TOKEN_EXPIRED}h`;
 		this.refreshTokenTime = `${this._configService.get('REFRESH_TOKEN_EXPRIRED') || DEFAULT_REFRESH_TOKEN_EXPIRED
@@ -87,6 +90,7 @@ export class AuthServiceImpl implements AuthService {
 
 			await this._authCacheService.setSession(user.id, user);
 
+			const session = await this._authCacheService.getSession(user?.id)
 			return {
 				user: user,
 				token: {
@@ -96,8 +100,32 @@ export class AuthServiceImpl implements AuthService {
 			};
 		} catch (err) {
 			this._loggerService.error(AuthService.name, JSON.stringify(err));
-			return null;
+			throw new InternalServerErrorException(ResponseDescription.INTERNAL_SERVER_ERROR)
 		}
+	}
+
+	async selectTenant(data: {
+		tenantId: string, userId: string
+	}): Promise<boolean> {
+		const { tenantId, userId } = data;
+
+		const session = await this._authCacheService.getSession(userId);
+		if (!session) {
+			throw new UnauthorizedException();
+		}
+
+		const userTenantList = await this._tenantService.getList({}, userId);
+		const usertenant = userTenantList.data.find(_usertenant => _usertenant.tenantId == tenantId);
+
+		if (!usertenant) {
+			throw new BadRequestException()
+		}
+
+		session.userTenant = usertenant;
+
+		await this._authCacheService.setSession(userId, session);
+
+		return true;
 	}
 
 	async validateUser(userId: string): Promise<UserSessionDto> {

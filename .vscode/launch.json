@@ -1,27 +1,12 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "type": "node",
+            {
+            "type": "node-terminal",
             "request": "launch",
-            "name": "Debug Nest Framework",
-            "args": [
-                "${workspaceFolder}/src/main.ts"
-            ],
-            "restart": true,
-            "runtimeExecutable": "yarn",
-            "runtimeArgs": [
-                "run",
-                "start:debug",
-                "--",
-                "--inspect-brk"
-            ],
-            "console": "integratedTerminal",
-            "sourceMaps": true,
-            "cwd": "${workspaceRoot}",
+            "name": "Debug Nest",
+            "command": "yarn run start:debug",  // or "yarn start:debug"
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

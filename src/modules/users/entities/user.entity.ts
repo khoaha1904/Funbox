@@ -1,8 +1,8 @@
 import { AutoMap } from '@automapper/classes';
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
-// import { UserTenantRoleEntity } from '../../role-permissions/entities/user-tennant-role.entity';
 import { BaseEntity } from '@libs/shared/entities/base.entity';
 import { UserTenantEntity } from '@apps/modules/tenants/entities/user-tenant.entity';
+
 
 @Entity('app_users')
 export class UserEntity extends BaseEntity {

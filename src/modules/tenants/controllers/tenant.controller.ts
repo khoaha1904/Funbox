@@ -15,6 +15,7 @@ import { CurrentUser } from '@apps/modules/auth/decorators/current-user.decorato
 import { ResponseDescription } from '@libs/shared/constants/descriptions.constant';
 import { CreateTenantRequestDto } from '../dtos/requests/create-tenant-request.dto';
 import { GetTenantListRequestDto } from '../dtos/requests/get-tenant-list-request.dto';
+import { UserSessionDto } from '@apps/modules/auth/dtos/user-session.dto';
 
 @Controller('tenants')
 export class TenantController extends BaseController {
@@ -26,7 +27,7 @@ export class TenantController extends BaseController {
 
     @Get()
     @UseGuards(JWTAuthGuard)
-    async getList(@Query() request: GetTenantListRequestDto, @CurrentUser() user: UserDto) {
+    async getList(@Query() request: GetTenantListRequestDto, @CurrentUser() user: UserSessionDto) {
         return {
             data: await this._tenantService.getList(request, user.id),
             message: ResponseDescription.OK,
@@ -35,7 +36,7 @@ export class TenantController extends BaseController {
 
     @Post()
     @UseGuards(JWTAuthGuard)
-    async createTenant(@Body() request: CreateTenantRequestDto, @CurrentUser() user: UserDto) {
+    async createTenant(@Body() request: CreateTenantRequestDto, @CurrentUser() user: UserSessionDto) {
         return {
             data: await this._tenantService.create(request, user.id),
             message: ResponseDescription.CREATED,

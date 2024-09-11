@@ -50,7 +50,7 @@ async function bootstrap() {
 	app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 	const port = configService.get('PORT') || 3000;
 	const corsOptions = {
-		origin: ['*'],
+		origin: '*',
 		method: 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS',
 		credential: false,
 		allowedHeaders: 'Content-Type, Authorization, X-Requested-With, Accept, X-XSRF-TOKEN, X-TENANT',

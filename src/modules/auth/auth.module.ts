@@ -7,10 +7,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '@apps/modules/users/user.module';
 import { AuthController } from './controllers/auth.controller';
-import { JwtLocalStrategy } from './strategies/auth.strategy';
+import { JwtLocalStrategy } from './strategies/jwt.strategy';
 import { RedisOptions } from 'ioredis';
 import { ConfigModule } from '@nestjs/config';
 import { AppCacheModule } from 'src/caches/cache.module';
+import { TenantModule } from '../tenants/tenant.module';
 
 const services = [
 	{
@@ -26,7 +27,7 @@ const providers = [AuthCacheService, ...services];
 		SharedModule,
 		// UserModule,
 		PassportModule,
-		// TenantModule,
+		TenantModule,
 		UsersModule,
 		ConfigModule.forRoot({
 			isGlobal: true,

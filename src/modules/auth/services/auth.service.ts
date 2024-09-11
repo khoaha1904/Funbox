@@ -8,5 +8,7 @@ export class AuthService {
 	getMe: (userId: string) => Promise<UserDto>;
 	login: (request: LoginRequestDto) => Promise<any>;
 	validateUser: (userId: string) => Promise<UserSessionDto>;
+	selectTenant: (data: { tenantId: string, userId: string }) => Promise<boolean>;
+	// verifyRole?: (userId: string, tenantId: string) => Promise<boolean>;
 	register: (request: RegisterRequestDto) => Promise<boolean>;
 }
