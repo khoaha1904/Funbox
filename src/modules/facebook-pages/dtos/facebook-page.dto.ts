@@ -10,8 +10,11 @@ export class FacebookPageCategoryDto {
 }
 
 export class FacebookPageDto extends BaseNoneIdDto {
-    @AutoMap()
+    @AutoMap(() => Number)
     id?: number;
+
+    @AutoMap()
+    tenantId: string;
 
     @AutoMap(() => TenantDto)
     tenant: TenantDto;

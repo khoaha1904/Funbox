@@ -12,6 +12,7 @@ import { RedisOptions } from 'ioredis';
 import { ConfigModule } from '@nestjs/config';
 import { AppCacheModule } from 'src/caches/cache.module';
 import { TenantModule } from '../tenants/tenant.module';
+import { FacebookPageModule } from '../facebook-pages/facebook-page.module';
 
 const services = [
 	{
@@ -29,6 +30,7 @@ const providers = [AuthCacheService, ...services];
 		PassportModule,
 		TenantModule,
 		UsersModule,
+		FacebookPageModule,
 		ConfigModule.forRoot({
 			isGlobal: true,
 			envFilePath: '.env',

@@ -18,6 +18,7 @@ import { LoginResponseDto } from '../dtos/responses/login-response.dto';
 import { AppMailService } from '@libs/shared/services/app-mail.service';
 import { ResponseDescription } from '@libs/shared/constants/descriptions.constant';
 import { TenantService } from '@apps/modules/tenants/services/tenant.service';
+import { FacebookPageService } from '@apps/modules/facebook-pages/services/facebook-page.service';
 
 @Injectable()
 export class AuthServiceImpl implements AuthService {
@@ -33,12 +34,18 @@ export class AuthServiceImpl implements AuthService {
 		private readonly _mailService: AppMailService,
 		private readonly _authCacheService: AuthCacheService,
 		@Inject(UsersService) private readonly _userService: UsersService,
-		@Inject(TenantService) private readonly _tenantService: TenantService
+		@Inject(TenantService) private readonly _tenantService: TenantService,
+		@Inject(FacebookPageService) private readonly _facebookPageService: FacebookPageService
 	) {
 		this.accessTokenTime = `${this._configService.get('ACCESS_TOKEN_EXPIRED') || DEFAULT_ACCESS_TOKEN_EXPIRED}h`;
 		this.refreshTokenTime = `${this._configService.get('REFRESH_TOKEN_EXPRIRED') || DEFAULT_REFRESH_TOKEN_EXPIRED
 			}h`;
 		this.accessTokenTime = `${this._configService.getNumber('MAX_MAIL_VERIFY_SENDING') || MAX_MAIL_VERIFY_SENDING}h`;
+	}
+
+	async verifyFacebookPage(request: { pageId: string, tenantId: string }): Promise<boolean> {
+		const page = await this._facebookPageService.getOneById(Number(request?.pageId));
+		return page?.id && page.tenantId === request?.tenantId
 	}
 
 	async verifyEmail(email: string, code: string): Promise<boolean> {
@@ -90,7 +97,7 @@ export class AuthServiceImpl implements AuthService {
 
 			await this._authCacheService.setSession(user.id, user);
 
-			const session = await this._authCacheService.getSession(user?.id)
+			// const session = await this._authCacheService.getSession(user?.id)
 			return {
 				user: user,
 				token: {

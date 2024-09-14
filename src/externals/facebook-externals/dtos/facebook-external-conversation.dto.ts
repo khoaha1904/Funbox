@@ -26,7 +26,7 @@ export class FacebookExternalMessageAttachment {
 }
 
 export class FacebookExternalsMessage {
-    id: number;
+    id: string;
     message: string;
     created_time: string;
     from: FacebookExternalsAudience;

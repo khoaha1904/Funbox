@@ -9,6 +9,9 @@ import { FacebookPageRepository } from "../repositories/facebook-page.repository
 import { FacebookPageEntity } from "../entities/facebook-page.entity";
 import { Transactional } from "typeorm-transactional";
 import { ResponseDescription } from "@libs/shared/constants/descriptions.constant";
+import { FacebookConversationService } from "@apps/modules/facebook-conversations/services/facebook-conversation.service";
+import { InjectMapper } from "@automapper/nestjs";
+import { Mapper } from "@automapper/core";
 
 @Injectable()
 export class FacebookPageServiceImpl implements FacebookPageService {
@@ -16,8 +19,44 @@ export class FacebookPageServiceImpl implements FacebookPageService {
         private readonly _loggerService: AppLoggerService,
         private readonly _utilService: UtilService,
         private readonly _facebook_external_service: FacebookExternalService,
-        @Inject(FacebookPageRepository) private readonly _facebookPageRepository: FacebookPageRepository
+        @Inject(FacebookPageRepository) private readonly _facebookPageRepository: FacebookPageRepository,
+        @Inject(FacebookConversationService) private readonly _facebookConversationRepository: FacebookConversationService,
+        @InjectMapper() private readonly _mapper: Mapper
     ) {
+    }
+
+    async getPageToken(pageId: number): Promise<string> {
+        try {
+            const entity = await this._facebookPageRepository.findOne({ where: { id: pageId } });
+            return entity?.page_access_token;
+        } catch (err) {
+            this._loggerService.error(FacebookPageServiceImpl.name, JSON.stringify(err));
+            throw new InternalServerErrorException(ResponseDescription.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async getList(request: GetFacebookPageListRequestDto, tenantId: string): Promise<PaginationResponseDto<FacebookPageDto>> {
+        try {
+            const [data, total] = await this._facebookPageRepository.findAndCount({ where: { tenantId } }, request);
+            return {
+                data: this._mapper.mapArray(data, FacebookPageEntity, FacebookPageDto),
+                total: total,
+            };
+
+        } catch (err) {
+            this._loggerService.error(FacebookPageServiceImpl.name, JSON.stringify(err));
+            throw new InternalServerErrorException(ResponseDescription.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async getOneById(id: number): Promise<FacebookPageDto> {
+        try {
+            const entity = await this._facebookPageRepository.findOne({ where: { id } });
+            return this._mapper.map(entity, FacebookPageEntity, FacebookPageDto)
+        } catch (err) {
+            this._loggerService.error(FacebookPageServiceImpl.name, JSON.stringify(err));
+            throw new InternalServerErrorException(ResponseDescription.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Transactional()
@@ -55,9 +94,18 @@ export class FacebookPageServiceImpl implements FacebookPageService {
                 tasks: connect_page.tasks,
             })
 
-            const page = await this._facebookPageRepository.save(payload);
+            const result = await this._facebookPageRepository.upsert(payload, {
+                conflictPaths: ['id'],
+                upsertType: 'on-conflict-do-update',
+                skipUpdateIfNoValuesChanged: true
+            });
 
-            return !!page;
+            if (result?.identifiers?.length > 0 && data.sync_message) {
+                const page = await this._facebookPageRepository.findOne({ where: { id: Number(page_id) } })
+                await this._facebookConversationRepository.syncConversation(Number(page.id), page.page_access_token, tenantId)
+            }
+
+            return result?.identifiers?.length > 0;
         } catch (err) {
             this._loggerService.error(FacebookPageServiceImpl.name, JSON.stringify(err));
             throw new InternalServerErrorException(ResponseDescription.INTERNAL_SERVER_ERROR);
@@ -91,8 +139,7 @@ export class FacebookPageServiceImpl implements FacebookPageService {
         // return !result.error && !permission_result.error;
     }
 
-    getList(request: GetFacebookPageListRequestDto, userId: string): Promise<PaginationResponseDto<FacebookPageDto>> {
-        throw new Error("Method not implemented.");
-    }
+
+
 
 }

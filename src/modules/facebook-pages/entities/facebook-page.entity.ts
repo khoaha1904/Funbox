@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { AutoMap } from '@automapper/classes';
 import { BaseNoneIdEntity } from '@libs/shared/entities/base-none-id.entity';
 import { TenantEntity } from '@apps/modules/tenants/entities/tenant.entity';
+import { FacebookConversationEntity } from '@apps/modules/facebook-conversations/entities/facebook-conversation.entity';
 
 export class FacebookPageCategory {
     id: string;
@@ -11,7 +12,7 @@ export class FacebookPageCategory {
 @Entity('facebook_pages')
 export class FacebookPageEntity extends BaseNoneIdEntity {
     @PrimaryColumn({ type: 'int8' })
-    @AutoMap()
+    @AutoMap(() => Number)
     id?: number;
 
     @Column({ type: 'uuid', nullable: true })
@@ -22,9 +23,9 @@ export class FacebookPageEntity extends BaseNoneIdEntity {
     @AutoMap(() => TenantEntity)
     tenant: TenantEntity;
 
-    // @OneToMany(() => FacebookConversationEntity, (conversation) => conversation.facebook_page)
-    // @AutoMap(() => [FacebookConversationEntity])
-    // conversations: FacebookConversationEntity[];
+    @OneToMany(() => FacebookConversationEntity, (conversation) => conversation.facebook_page)
+    @AutoMap(() => [FacebookConversationEntity])
+    conversations: FacebookConversationEntity[];
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     @AutoMap()

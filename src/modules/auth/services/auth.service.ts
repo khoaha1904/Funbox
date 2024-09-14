@@ -10,5 +10,6 @@ export class AuthService {
 	validateUser: (userId: string) => Promise<UserSessionDto>;
 	selectTenant: (data: { tenantId: string, userId: string }) => Promise<boolean>;
 	// verifyRole?: (userId: string, tenantId: string) => Promise<boolean>;
+	verifyFacebookPage: (request: { pageId: string, tenantId: string }) => Promise<boolean>;
 	register: (request: RegisterRequestDto) => Promise<boolean>;
 }

@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TenantModule } from './modules/tenants/tenant.module';
 import { AppController } from './app.controller';
 import { FacebookPageModule } from './modules/facebook-pages/facebook-page.module';
+import { FacebookConversationModule } from './modules/facebook-conversations/facebook-conversastion.module';
 
 @Module({
 	imports: [
@@ -14,6 +15,7 @@ import { FacebookPageModule } from './modules/facebook-pages/facebook-page.modul
 		AuthModule,
 		TenantModule,
 		FacebookPageModule,
+		FacebookConversationModule,
 		ConfigModule.forRoot({
 			isGlobal: true,
 			envFilePath: '.env',

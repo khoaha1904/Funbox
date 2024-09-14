@@ -11,8 +11,15 @@ import { DatabaseModule } from '@apps/databases/database.module';
 import { FacebookPageEntity } from './entities/facebook-page.entity';
 import { FacebookPageRepository } from './repositories/facebook-page.repository';
 import { FacebookPageRepositoryImpl } from './repositories/facebook-page.repository.impl';
+import { FacebookConversationModule } from '../facebook-conversations/facebook-conversastion.module';
+import { AutomapperModule } from '@automapper/nestjs';
+import { classes } from '@automapper/classes';
+import { FacebookPageProfile } from './profiles/facebook-page.profile';
 
-const providers = [{ provide: FacebookPageService, useClass: FacebookPageServiceImpl }];
+const providers = [
+	{ provide: FacebookPageService, useClass: FacebookPageServiceImpl },
+	FacebookPageProfile
+];
 const repositories = [{ provide: FacebookPageRepository, useClass: FacebookPageRepositoryImpl }]
 
 @Module({
@@ -23,7 +30,11 @@ const repositories = [{ provide: FacebookPageRepository, useClass: FacebookPageR
 			isGlobal: true,
 			envFilePath: '.env',
 		}),
+		AutomapperModule.forRoot({
+			strategyInitializer: classes(),
+		}),
 		TenantModule,
+		FacebookConversationModule,
 		FacebookExternalModule,
 		DatabaseModule,
 		DatabaseModule.forFeature([FacebookPageEntity])
