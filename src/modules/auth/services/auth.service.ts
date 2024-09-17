@@ -4,6 +4,7 @@ import { LoginRequestDto } from '../dtos/requests/login-request.dto';
 import { RegisterRequestDto } from '../dtos/requests/register-request.dto';
 
 export class AuthService {
+	verifyToken: (token: string) => Promise<UserSessionDto>;
 	verifyEmail: (email: string, code: string) => Promise<boolean>;
 	getMe: (userId: string) => Promise<UserDto>;
 	login: (request: LoginRequestDto) => Promise<any>;

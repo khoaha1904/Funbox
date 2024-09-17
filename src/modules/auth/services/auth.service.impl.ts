@@ -43,6 +43,23 @@ export class AuthServiceImpl implements AuthService {
 		this.accessTokenTime = `${this._configService.getNumber('MAX_MAIL_VERIFY_SENDING') || MAX_MAIL_VERIFY_SENDING}h`;
 	}
 
+	async verifyToken(token: string): Promise<UserSessionDto> {
+		const isValid = this.jwtService.verify(token);
+
+		if (!isValid) {
+			return null;
+		}
+		// console.log(isValid);
+
+		try {
+			const user = this.jwtService.decode(token)
+			return await this.validateUser(user?.id)
+		} catch (err) {
+			this._loggerService.error(AuthServiceImpl.name, JSON.stringify(err))
+			throw new InternalServerErrorException(ResponseDescription.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	async verifyFacebookPage(request: { pageId: string, tenantId: string }): Promise<boolean> {
 		const page = await this._facebookPageService.getOneById(Number(request?.pageId));
 		return page?.id && page.tenantId === request?.tenantId

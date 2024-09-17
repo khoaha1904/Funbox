@@ -1,5 +1,5 @@
 import { AppLoggerService, UtilService } from "@libs/shared/services";
-import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, OnModuleInit, UnauthorizedException } from "@nestjs/common";
 import { FacebookConversationService } from "./facebook-conversation.service";
 import { FacebookExternalService } from "@apps/externals/facebook-externals/facebook-external.service";
 import { FacebookConversationRepository } from "../repositories/facebook-conversation.repository";
@@ -18,6 +18,8 @@ import { GetFacebookMessageListRequestDto } from "../dtos/requests/get-message-l
 import { FacebookConversationMessageDto } from "../dtos/facebook-conversation-message.dto";
 import { FindManyOptions, LessThan } from "typeorm";
 import { FacebookPageService } from "@apps/modules/facebook-pages/services/facebook-page.service";
+import { FacebookExternalsAudience } from "@apps/externals/facebook-externals/dtos/facebook-external-conversation.dto";
+import { FacebookConversationGateway } from "../facebook-conversation.gateway";
 
 @Injectable()
 export class FacebookConversationServiceImpl implements FacebookConversationService {
@@ -26,11 +28,17 @@ export class FacebookConversationServiceImpl implements FacebookConversationServ
         private readonly _utilService: UtilService,
         private readonly _facebook_external_service: FacebookExternalService,
         @InjectMapper() private readonly _mapper: Mapper,
+        @Inject(forwardRef(() => FacebookConversationGateway)) private readonly _facebookConversationGateWay: FacebookConversationGateway,
         @Inject(forwardRef(() => FacebookPageService)) private readonly _facebookPageService: FacebookPageService,
         @Inject(FacebookConversationRepository) private readonly _facebookConversationRepository: FacebookConversationRepository,
         @Inject(FacebookConversationMessageRepository) private readonly _facebookConversationMessageRepository: FacebookConversationMessageRepository,
         @Inject(FacebookConversationAudienceRepository) private readonly _facebookConversationAudienceRepository: FacebookConversationAudienceRepository
     ) {
+    }
+
+    async handleNewMessage(facebookMessage: FacebookConversationMessageEntity): Promise<boolean> {
+        this._facebookConversationGateWay.server.emit('message', this._mapper.map(facebookMessage, FacebookConversationMessageEntity, FacebookConversationMessageDto));
+        return true
     }
 
     async sendMessage(data: { pageId: number, message: string, recipientId: number }): Promise<boolean> {
@@ -92,6 +100,94 @@ export class FacebookConversationServiceImpl implements FacebookConversationServ
         } catch (err) {
             this._loggerService.error(FacebookConversationServiceImpl.name, JSON.stringify(err));
             throw new InternalServerErrorException(ResponseDescription.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async syncOneMessage(facebookMessageId: string, pageId: string, isEcho: boolean): Promise<boolean> {
+        const facebookPageToken = await this._facebookPageService.getPageToken(Number(pageId));
+
+        const externalMessage = await this._facebook_external_service.getMessage(facebookMessageId, facebookPageToken);
+
+        if (!externalMessage?.id) {
+            return false;
+        }
+
+        const facebookPageId = isEcho ? Number(externalMessage?.from?.id) : Number(externalMessage?.to.data[0].id);
+        const rawFacebookAudience: FacebookExternalsAudience = isEcho ? externalMessage?.to.data[0] : externalMessage?.from;
+
+        const facebookConversation = await this._facebookConversationRepository.findOne({
+            where: {
+                facebook_page_id: facebookPageId,
+                facebook_conversation_audience_id: Number(rawFacebookAudience.id)
+            }
+        })
+
+        const facebookAudience = await this._facebookConversationAudienceRepository.findOne({
+            where: {
+                id: Number(rawFacebookAudience.id)
+            }
+        })
+
+        try {
+            let conversationId = facebookConversation?.id;
+
+            if (!conversationId) {
+                const rawList = await this._facebook_external_service.getConversation({
+                    user_id: rawFacebookAudience.id,
+                    page_id: facebookPageId.toString(),
+                    page_access_token: facebookPageToken,
+                })
+                if (!rawList.length) {
+                    return false;
+                }
+                conversationId = rawList[0].id
+            }
+
+            if (!facebookAudience) {
+                const newFacebookAudiencePayload = this._facebookConversationAudienceRepository.create({
+                    id: Number(rawFacebookAudience.id),
+                    name: rawFacebookAudience.name,
+                    email: rawFacebookAudience.email,
+                })
+
+                const newFacebookAudience = await this._facebookConversationAudienceRepository.save(newFacebookAudiencePayload)
+
+                if (!newFacebookAudience) {
+                    return false
+                }
+            }
+
+            const conversationPayload: Partial<FacebookConversationEntity> = {
+                id: conversationId,
+                is_echo: isEcho,
+                last_message: externalMessage.message,
+                last_message_time: new Date(externalMessage.created_time),
+                last_message_attachment: externalMessage?.attachments?.data?.length > 0,
+                facebook_conversation_audience_id: Number(rawFacebookAudience?.id),
+                facebook_page_id: Number(pageId)
+            }
+
+            await this._facebookConversationRepository.upsert(conversationPayload,
+                { conflictPaths: ['id'], skipUpdateIfNoValuesChanged: true, upsertType: 'on-conflict-do-update' }
+            )
+
+            const messagePayload: Partial<FacebookConversationMessageEntity> = {
+                id: externalMessage?.id,
+                message: externalMessage.message,
+                is_echo: Number(externalMessage.from.id) === Number(facebookPageId),
+                sending_time: new Date(externalMessage.created_time),
+                facebook_conversation_id: conversationId,
+                attachments: externalMessage?.attachments?.data
+            };
+
+            await this._facebookConversationMessageRepository.upsert(messagePayload,
+                { conflictPaths: ['id'], skipUpdateIfNoValuesChanged: true, upsertType: 'on-conflict-do-update' }
+            )
+
+            return true;
+        } catch (err) {
+            this._loggerService.error(FacebookConversationServiceImpl.name, JSON.stringify(err));
+            return false;
         }
     }
 

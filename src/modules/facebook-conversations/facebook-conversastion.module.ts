@@ -22,10 +22,14 @@ import { AuthModule } from '../auth/auth.module';
 import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
 import { FacebookPageModule } from '../facebook-pages/facebook-page.module';
+import { FacebookMessageSubscriber } from './subcribers/message.subcriber';
+import { FacebookConversationGateway } from './facebook-conversation.gateway';
 
 const providers = [
     { provide: FacebookConversationService, useClass: FacebookConversationServiceImpl },
-    FacebookConversationProfile
+    FacebookConversationProfile,
+    FacebookMessageSubscriber,
+    FacebookConversationGateway
 ];
 const repositories = [
     { provide: FacebookConversationRepository, useClass: FacebookConversationRepositoryImpl },

@@ -9,11 +9,26 @@ import * as cors from 'cors';
 import helmet from 'helmet';
 import * as express from 'express';
 import { join } from 'path';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
 	initializeTransactionalContext();
 
 	const app = await NestFactory.create(AppModule);
+
+	// Set up Kafka microservice
+	// app.connectMicroservice<MicroserviceOptions>({
+	// 	transport: Transport.KAFKA,
+	// 	options: {
+	// 		client: {
+	// 			brokers: ['localhost:9092'],  // Replace with your Kafka broker address
+	// 		},
+	// 		consumer: {
+	// 			groupId: 'nestjs-consumer-group',  // Consumer group
+	// 		},
+	// 	},
+	// });
+
 
 	const configService = app.get(AppConfigService);
 	const loggerService = app.get(AppLoggerService);

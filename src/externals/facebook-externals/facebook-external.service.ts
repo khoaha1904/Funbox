@@ -34,7 +34,8 @@ export class FacebookExternalService {
     }
 
     async getMessage(message_id: string, page_access_token: string): Promise<FacebookExternalsMessage> {
-        const url = `${this.base_url}/${this.version}/${message_id}?fields=id,created_time,from,to,message&access_token=${page_access_token}`;
+        const url = `${this.base_url}/${this.version}/${message_id}?fields=id,message,from,to,created_time,attachments,reactions&access_token=${page_access_token}`;
+
 
         try {
             const result = await firstValueFrom(this.httpService.get(url));
@@ -141,6 +142,7 @@ export class FacebookExternalService {
             const result = await firstValueFrom(
                 this.httpService.get<FacebookPagingExternalsResponse<FacebookExternalsConversationDto>>(url, {
                     params: {
+                        user_id: payload?.user_id,
                         access_token: payload.page_access_token,
                         fields: 'participants,messages{id,message,from,to,created_time,attachments,reactions}',
                     },
