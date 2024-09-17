@@ -1,0 +1,17 @@
+version: "3.0"
+
+services:
+    funbox_be:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        container_name: funbox_be
+        env_file:
+            - .env
+
+        command: yarn start:prod
+
+networks:
+    default:
+        name: funbox_network
+        external: true
