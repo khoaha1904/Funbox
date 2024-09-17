@@ -11,3 +11,5 @@ COPY src/ src/
 COPY tsconfig.json .
 COPY tsconfig.build.json .
 COPY nest-cli.json .
+
+RUN yarn build
