@@ -1,6 +1,7 @@
 # Funbox
 
-## Chat Management
+### Demo URL
+[Funbox Demo](http://your-demo-url.com)
 
 ### Step 1: Chat with the Fanpage to Start a Chat
 [Facebook Fanpage](https://www.facebook.com/profile.php?id=100085889208204)
