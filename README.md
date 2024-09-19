@@ -1,7 +1,5 @@
 # Funbox
 
-### Duration: 06/2024 - NOW
-
 ## Chat Management
 
 ### Step 1: Chat with the Fanpage to Start a Chat
