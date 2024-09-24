@@ -1,16 +1,6 @@
 version: "3.0"
 
 services:
-    #    core_service:
-    #        build:
-    #            context: ./
-    #            dockerfile: ./apps/core-service/Dockerfile
-    #        container_name: core_service
-    #        env_file:
-    #            - .env
-    #
-    #        command: yarn start core-service
-
     core_redis:
         image: redis:${REDIS_VERSION:-lastest}
         hostname: core_redis

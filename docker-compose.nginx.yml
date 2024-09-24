@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+    manager:
+        image: 'jc21/nginx-proxy-manager:${NGINX_PROXY_MANAGER_VERSION}'
+        restart: unless-stopped
+        ports:
+            - '80:80'
+            - '81:81'
+            - '443:443'
+        volumes:
+            - ./data:/data
+            - ./letsencrypt:/etc/letsencrypt
+        networks:
+            - nginx_net
+
+networks:
+    nginx_net:
+        name: funbox_network
+        external: true
